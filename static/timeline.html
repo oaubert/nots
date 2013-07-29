@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My Sample Trail</title>
+        <!-- data-main attribute tells require.js to load
+             src/ktbs.js after require.js loads. -->
+        <!-- <script data-main="src/ktbs" --
+          -- src="src/require.js"></script> -->
+        <link rel="stylesheet" type="text/css" href="timeline/timeline.css">
+       </head>
+    <body>
+        <form><input id="b" type="button" value="foo"></form>
+
+        <div id="trace-timeline">
+        </div>
+
+        <script type="text/javascript" src="src/jquery.js"></script>
+        <script type="text/javascript" src="src/tracemanager.js"></script>
+        <script type="text/javascript" src="timeline/timeline.js"></script>
+        <script type="text/javascript">
+            $(window).load(function() {
+                var timelineData;
+
+                console.log("Starting test");
+                
+                tr = window.tracemanager.init_trace("test", {
+                    url: "http://localhost:5000/trace/",
+                    requestmode: 'GET',
+                    syncmode: "none",
+                    default_subject: "ktbs4js",
+                    format: 'json',
+                });
+                tr.trace("StartTracing", { foo: "bar" });
+                for (var i = 0; i < 10; i++) {
+                    tr.trace("Iteration", { index: i });
+                }
+
+                $('#b').bind('mouseover', function () { tr.trace('MouseOver', {widget: this.id}); } )
+                       .bind('mouseout', function () { tr.trace('MouseOut', {widget: this.id}); } )
+                    .bind('click', function () { tr.trace('Click', {widget: this.id}); } );
+                
+                // specify options
+                var options = {
+                    "axisOnTop": true,
+                    "cluster": true,
+                    "width":  "100%",
+                    "height": "auto",
+                    "minHeight": 100,
+                    "stackEvents": false,
+                    "showNavigation": false,
+                    "style": "box"
+                };
+                
+                // Instantiate our timeline object.
+                var timeline = new links.Timeline(document.getElementById('trace-timeline'));
+
+                function refresh() { 
+                    // Draw our timeline with the created data and options
+                    console.log("Refreshing");
+                    timelineData = tr.obsels.map( function(o) {
+                        return { 
+                            "start": new Date(o.begin),
+                            "group": o.type,
+                            "content": Object.keys(o.attributes).map(function(p) { return p+":"+o.attributes[p]; }).join(", ")
+                        };
+                    });
+                    timeline.draw(timelineData, options);
+                    
+                    // Update displayed range
+                    timeline.setVisibleChartRangeAuto();
+                    
+                }
+                $('#b').bind('click', refresh);
+                refresh();
+
+            });
+        </script>
+
+    </body>
+</html>
