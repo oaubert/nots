@@ -83,14 +83,17 @@
                 // Instantiate our timeline object.
                 var timeline = new links.Timeline(document.getElementById('trace-timeline'));
 
-                function refresh() { 
+                function refresh() {
                     // Draw our timeline with the created data and options
-                    console.log("Refreshing");
-                    timelineData = tr.obsels.map( function(o) {
-                        return { 
+                    timelineData = tr.obsels
+                    // FIXME: hack to filter out invalid obsels with invalid timestamp
+                        .filter(function(o) { return o.begin > 100000 })
+                        .map( function(o) {
+                        return {
                             "start": new Date(o.begin),
                             "group": o.type,
-                            "content": Object.keys(o.attributes).map(function(p) { return p+":"+o.attributes[p]; }).join(", ")
+                            "content": Object.keys(o.attributes).map(function(p) { return p + ":" + o.attributes[p]; }).join(", "),
+                            "className": o.type
                         };
                     });
                     timeline.draw(timelineData, options);
