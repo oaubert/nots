@@ -26,16 +26,27 @@
         </style>
     </head>
     <body>
-        <form><input id="b" type="button" value="foo"></form>
+      <div id="info">
+        <form>
+          <input id="refresh" type="button" value="Refresh" />
+          <input id="load" type="button" value="Load more data" />
+        </form>
+        <span id="label"></span>
+      </div>
 
-        <div id="trace-timeline">
-        </div>
+      <div id="trace-timeline">
+      </div>
 
         <script type="text/javascript" src="src/jquery.js"></script>
         <script type="text/javascript" src="src/tracemanager.js"></script>
         <script type="text/javascript" src="timeline/timeline.js"></script>
         <script type="text/javascript">
             $(window).load(function() {
+
+                function logmsg(s) {
+                    $("#label").text(s);
+                };
+
                 var timelineData;
 
                 console.log("Starting test");
@@ -52,7 +63,7 @@
                     tr.trace("Iteration", { index: i });
                 }
 
-                $('#b').bind('mouseover', function () { tr.trace('MouseOver', {widget: this.id}); } )
+                $('#refresh').bind('mouseover', function () { tr.trace('MouseOver', {widget: this.id}); } )
                        .bind('mouseout', function () { tr.trace('MouseOut', {widget: this.id}); } )
                     .bind('click', function () { tr.trace('Click', {widget: this.id}); } );
                 
@@ -87,7 +98,7 @@
                     timeline.setVisibleChartRangeAuto();
                     
                 }
-                $('#b').bind('click', refresh);
+                $('#refresh').bind('click', refresh);
                 refresh();
 
             });
