@@ -307,13 +307,17 @@ def trace_get(info):
     if page_size is not None:
         page_size = int(page_size)
     info = info.split('/')
+    query = {}
+    if from_ts is not None:
+        query['begin'] =  { '$gt': from_ts }
+    if to_ts is not None:
+        query['end'] =  { '$lt': to_ts }
+
     if len(info) == 1 or (len(info) == 2 and info[1] == ''):
-        # subject
-        if info[0] == '@obsels':
-            # Address all obsels
-            obsels = db['trace'].find()
-        else:
-            obsels = db['trace'].find({'subject': info[0]})
+        if info[0] and info[0] != '@obsels':
+            query = { 'subject': info[0] }
+        
+        obsels = db['trace'].find(query)
         total = obsels.count()
 
         if page_number is not None:
@@ -351,18 +355,9 @@ def trace_get(info):
                     response.headers['Content-Range'] = "items %d-%d/%d" % (i, i + count, total)
                     response.headers['Content-Type'] = 'application/json'
                     return response
-        elif from_ts is not None:
-            if to_ts is None:
-                # Only > from_ts
-                cursor = obsels.filter({ 'begin': { '$gt': from_ts } })
-            else:
-                cursor = obsels.filter({ 'begin': { '$gt': from_ts },
-                                         'end': { '$lt': to_ts } })
-        else:
-            # No restriction. Use all obsels.
-            cursor = obsels
 
-        count = cursor.count()
+        obsels = db['trace'].find(query)
+        count = obsels.count()
         if request.method == 'HEAD':
             response = make_response()
             response.headers['Content-Range'] = "items 0-%d/%d" % (max(count - 1, 0), total)
@@ -380,14 +375,14 @@ def trace_get(info):
                             ],
                         "@id": ".",
                         "hasObselList": "",
-                        'obsels': list(iter_obsels(cursor)) },
+                        'obsels': list(iter_obsels(obsels)) },
                                                           indent=None if request.is_xhr else 2,
                                                           cls=MongoEncoder),
                                                    mimetype='application/json')
             response.headers['Content-Range'] = "items 0-%d/%d" % (max(count - 1, 0), total)
             return response
     elif len(info) == 2:
-        # subject, id
+        # subject, id: let's ignore from/to parameters
         return current_app.response_class( json.dumps({
                     "@context": [
                         "http://liris.cnrs.fr/silex/2011/ktbs-jsonld-context",
