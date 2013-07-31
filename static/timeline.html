@@ -48,6 +48,7 @@
                 };
 
                 var timelineData;
+                var page = 2;
 
                 console.log("Starting test");
                 
@@ -101,6 +102,12 @@
                 $('#refresh').bind('click', refresh);
                 refresh();
 
+                $('#load').bind('click', function () {
+                    tr.load_obsels('?page=' + page);
+                    page += 1;
+                    refresh();
+                    logmsg("Displaying " + tr.obsels.length + " obsels");
+                });
             });
         </script>
 
