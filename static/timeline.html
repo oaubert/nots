@@ -88,6 +88,8 @@
 
                 // Instantiate our timeline object.
                 var timeline = new links.Timeline(document.getElementById('trace-timeline'));
+                // Reference timeline for debug
+                window.timeline = timeline;
 
                 function refresh() {
                     // Draw our timeline with the created data and options
