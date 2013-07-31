@@ -48,6 +48,8 @@
             $(window).load(function() {
 
                 function logmsg(s) {
+                    if (console !== undefined)
+                        console.log(s);
                     $("#label").text(s);
                 };
 
