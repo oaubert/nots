@@ -51,7 +51,7 @@
                 var page = 2;
 
                 console.log("Starting test");
-                
+
                 tr = window.tracemanager.init_trace("test", {
                     url: "http://localhost:5000/trace/",
                     requestmode: 'GET',
@@ -81,7 +81,7 @@
                     "showNavigation": false,
                     "style": "box"
                 };
-                
+
                 // Instantiate our timeline object.
                 var timeline = new links.Timeline(document.getElementById('trace-timeline'));
 
@@ -99,10 +99,10 @@
                         };
                     });
                     timeline.draw(timelineData, options);
-                    
+
                     // Update displayed range
                     timeline.setVisibleChartRangeAuto();
-                    
+
                 }
                 $('#refresh').bind('click', refresh);
                 refresh();
