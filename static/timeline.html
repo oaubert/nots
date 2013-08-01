@@ -41,12 +41,11 @@
       <div id="trace-timeline">
       </div>
 
-        <script type="text/javascript" src="src/jquery.js"></script>
-        <script type="text/javascript" src="src/tracemanager.js"></script>
-        <script type="text/javascript" src="timeline/timeline.js"></script>
-        <script type="text/javascript">
+      <script type="text/javascript" data-main="src/tracemanager" src="src/require.js"></script>
+      <script type="text/javascript" src="timeline/timeline.js"></script>
+      <script type="text/javascript">
+        require(['jquery', 'tracemanager'], function($, tracemanager) {
             $(window).load(function() {
-
                 function logmsg(s) {
                     if (console !== undefined)
                         console.log(s);
@@ -56,7 +55,7 @@
                 var timelineData;
                 var page = 2;
 
-                tr = window.tracemanager.init_trace("test", {
+                tr = tracemanager.init_trace("test", {
                     url: "http://localhost:5000/trace/",
                     requestmode: 'GET',
                     syncmode: "none",
@@ -127,6 +126,7 @@
                     logmsg("Displaying " + tr.obsels.length + " obsels");
                 });
             });
+        });
         </script>
 
     </body>
