@@ -103,27 +103,27 @@
                             "className": o.type
                         };
                     });
+                    logmsg("Displaying " + tr.obsels.length + " obsels");
                     timeline.draw(timelineData, options);
 
                     // Update displayed range
                     timeline.setVisibleChartRangeAuto();
 
                 }
+                $(tr).on("updated", function() {
+                    refresh();
+                });
                 $('#refresh').bind('click', refresh);
                 refresh();
 
                 $('#load').bind('click', function () {
                     tr.load_obsels('?page=' + page);
                     page += 1;
-                    refresh();
-                    logmsg("Displaying " + tr.obsels.length + " obsels");
                 });
                 $('#loadrange').bind('click', function () {
                     var range = timeline.getVisibleChartRange();
                     logmsg("Loading data from " + range.start + " to " + range.end);
                     tr.load_obsels('?from=' + range.start.getTime() + '&to=' + range.end.getTime());
-                    refresh();
-                    logmsg("Displaying " + tr.obsels.length + " obsels");
                 });
             });
         });
