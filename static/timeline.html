@@ -4,17 +4,29 @@
         <title>Trace visualisation</title>
         <link rel="stylesheet" type="text/css" href="timeline/timeline.css">
         <style type="text/css">
-          div.timeline-event-dot {
-              border-style: solid;
-              border-width: 2px;
+          #info {
+              position: fixed;
+              top: -5px;
+              right: -5px;
+              margin: 5px;
+              padding: 5px;
+              opacity: .8;
+              background-color: #eee;
+              max-width: 240px;
+              border: 2px solid #9bf;
+              border-radius: 2px;
+          }
+
+          div.timeline-event {
+              border: 1px solid #97b0f8;
               margin-top: 2px;
               margin-left: 3px;
-              border-radius: 2px;
-              -moz-border-radius: 2px;
+              border-radius: 1px;
+              -moz-border-radius: 1px;
           }
           div.timeline-event-box {
               max-width: 100px;
-              }
+          }
 
           div.timeline-event-line {
               opacity: 0;
@@ -26,7 +38,7 @@
         </style>
     </head>
     <body>
-      <div id="info">
+      <div id="actions">
         <form>
           <input id="refresh" type="button" value="Refresh" />
           <input id="load" type="button" value="Load more data" />
@@ -35,6 +47,9 @@
       </div>
 
       <div id="trace-timeline">
+      </div>
+
+      <div id="info">
       </div>
 
       <script type="text/javascript" data-main="src/tracemanager" src="src/require.js"></script>
@@ -85,7 +100,16 @@
                         return {
                             "start": new Date(o.begin),
                             "group": o.type,
-                            "content": Object.keys(o.attributes).map(function(p) { return p + ":" + o.attributes[p]; }).join(", "),
+                            "content": ('<span class="obsel-data" data-id="'
+                                        + o.id
+                                        + '" data-begin="'
+                                        + o.begin
+                                        + '" data-end="'
+                                        + o.end
+                                        + '">'
+                                        + ((Object.keys(o.attributes).map(function(p) { return p + ":" + o.attributes[p]; }).join(", "))
+                                           || o.id)
+                                        + '</span>'),
                             "className": o.type
                         };
                     });
@@ -101,6 +125,15 @@
                 });
                 $('#refresh').bind('click', refresh);
                 refresh();
+
+                $('#trace-timeline').on('hover', '.obsel-data', function () {
+                    var begin = new Date(parseInt(this.dataset.begin));
+                    var end = new Date(parseInt(this.dataset.end));
+                    $('#info').html('<a href="' + tr.uri + this.dataset.id + '">' + this.dataset.id + '</a>'
+                                    + '<p>From&nbsp;' + begin.toJSON() 
+                                    + '<br>To&nbsp;&nbsp;&nbsp;&nbsp;' + end.toJSON() 
+                                    + '<br>Duration: ' + (end - begin) / 1000 + ' s.</p>');
+                });
 
                 $('#load').bind('click', function () {
                     tr.load_obsels('?page=' + page);
