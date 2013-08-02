@@ -141,7 +141,7 @@
                 });
                 $('#loadrange').bind('click', function () {
                     var range = timeline.getVisibleChartRange();
-                    logmsg("Loading data from " + range.start + " to " + range.end);
+                    logmsg("Loading data from " + range.start.toJSON() + " to " + range.end.toJSON());
                     tr.load_obsels('?from=' + range.start.getTime() + '&to=' + range.end.getTime());
                 });
             });
