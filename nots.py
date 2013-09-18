@@ -459,9 +459,9 @@ def dump_turtle(args):
             'end': o['end'],
             'subject': o['subject'],
             'data': u"\n  ".join( u':has%s %s;' % (name.capitalize(),
-                                                 u'"%s"' % value if isinstance(value, unicode) else unicode(value))
-                                for (name, value) in o.iteritems()
-                                if not name in ('begin', 'end', '@type', '@id', 'id', 'subject'))
+                                                   json.dumps(value))
+                                  for (name, value) in o.iteritems()
+                                  if not name in ('begin', 'end', '@type', '@id', 'id', 'subject'))
             }
         print out.encode('utf-8')
 
