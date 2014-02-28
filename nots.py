@@ -30,11 +30,6 @@ from flask import Flask, Response
 from flask import session, request, redirect, url_for, current_app, make_response, abort
 import pymongo
 
-# PARAMETRES
-# DB = DataBase
-# COL= Collection
-DB   	  = 'ktbs'
-
 # Pseudo-JSON compression data
 VALUE_TABLE = {
     '@i': '@id',
@@ -47,11 +42,11 @@ VALUE_TABLE = {
 
 # Server configuration
 CONFIG = {
+    'database': 'ktbs',
     # Enable debug. This implicitly disallows external access
     'enable_debug': False,
     # Run the server in external access mode (i.e. not only localhost)
     'allow_external_access': True,
-
     # Trace access control (for reading) is either:
     # 'none' -> no access
     # 'localhost' -> localhost only
@@ -62,7 +57,7 @@ CONFIG = {
 MAX_DEFAULT_OBSEL_COUNT = 1000
 
 connection = pymongo.Connection("localhost", 27017)
-db = connection[DB]
+db = None
 
 app = Flask(__name__)
 
@@ -102,6 +97,7 @@ def login():
     else:
         session['userinfo'] = json.loads(params)
         session['userinfo'].setdefault('id', str(uuid.uuid1()))
+
         db['userinfo'].save(dict(session['userinfo']))
         session.modified = True
 
@@ -523,6 +519,10 @@ app.secret_key = os.urandom(24)
 if __name__ == "__main__":
     parser=OptionParser(usage="""Trace server.\n%prog [options]""")
 
+    parser.add_option("-b", "--base", dest="database", action="store",
+                      help="Mongo database name.",
+                      default="ktbs")
+
     parser.add_option("-d", "--debug", dest="enable_debug", action="store_true",
                       help="Enable debug. This implicitly disallows external access.",
                       default=False)
@@ -556,6 +556,8 @@ if __name__ == "__main__":
         import pdb; pdb.set_trace()
         import sys; sys.exit(0)
 
+    db = connection[CONFIG['database']]
+
     if options.dump_stats:
         dump_stats(args)
     elif options.dump_turtle:
@@ -566,7 +568,6 @@ if __name__ == "__main__":
         print "Options:"
         for k, v in CONFIG.iteritems():
             print " %s: %s" % (k, str(v))
-            print
 
         if CONFIG['enable_debug']:
             app.run(debug=True)
