@@ -134,7 +134,7 @@ def trace():
         if request.method == 'POST':
             obsels = request.json
         else:
-            data = request.values['post']
+            data = request.values.get('post') or request.values.get('data', "")
             if data.startswith('c['):
                 # Data mangling here. Pseudo compression is involved.
                 # Swap " and ;. Note that we use unicode.translate, so we pass a dict mapping.
@@ -151,8 +151,10 @@ def trace():
                         o['id'] = ""
                     if not 'subject' in o:
                         o['subject'] = session['userinfo'].get('default_subject', "anonymous")
-            else:
+            elif data:
                 obsels = json.loads(data)
+            else:
+                obsels = []
         for obsel in obsels:
             obsel['_serverid'] = session['userinfo'].get('id', "");
             db['trace'].save(obsel)
