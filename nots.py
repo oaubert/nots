@@ -166,6 +166,8 @@ def trace():
             # requests, and invoked through a <img> src
             # attribute. Let's return a pseudo-image.
             response.mimetype = 'image/png'
+            # Return the smalled valid PNG file, see http://garethrees.org/2007/11/14/pngcrush/
+            response.data = '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82'
         else:
             response.data = "%d" % len(obsels)
         return response
