@@ -49,7 +49,9 @@
       <div id="trace-timeline">
       </div>
 
-      <div id="info">
+      <div id="info">Info:
+        <div id="obselinfo">
+        </div>
       </div>
 
       <script type="text/javascript" data-main="src/tracemanager" src="src/require.js"></script>
@@ -106,6 +108,8 @@
                                         + o.begin
                                         + '" data-end="'
                                         + o.end
+                                        + '" data-subject="'
+                                        + o.subject
                                         + '">'
                                         + ((Object.keys(o.attributes).map(function(p) { return p + ":" + o.attributes[p]; }).join(", "))
                                            || o.id)
@@ -126,13 +130,15 @@
                 $('#refresh').bind('click', refresh);
                 refresh();
 
+                $("#info").click(function () { $('#obselinfo').toggle(); });
                 $('#trace-timeline').on('hover', '.obsel-data', function () {
                     var begin = new Date(parseInt(this.dataset.begin));
                     var end = new Date(parseInt(this.dataset.end));
-                    $('#info').html('<a href="' + tr.uri + this.dataset.id + '">' + this.dataset.id + '</a>'
-                                    + '<p>From&nbsp;' + begin.toJSON() 
-                                    + '<br>To&nbsp;&nbsp;&nbsp;&nbsp;' + end.toJSON() 
-                                    + '<br>Duration: ' + (end - begin) / 1000 + ' s.</p>');
+                    $('#obselinfo').html('<a href="' + tr.uri + this.dataset.subject + '/' + this.dataset.id + '">' + this.dataset.id + '</a>'
+                                         + '<p>From&nbsp;' + begin.toJSON() 
+                                         + '<br>To&nbsp;&nbsp;&nbsp;&nbsp;' + end.toJSON() 
+                                         + '<br>Duration: ' + (end - begin) / 1000 + ' s.</p>'
+                                         + '<p>'+ $(this).text().replace(',', '<br>') + '</p>');
                 });
 
                 $('#load').bind('click', function () {
