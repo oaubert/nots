@@ -118,6 +118,7 @@ def iter_obsels(cursor):
     for o in cursor:
         o['@id'] = o['_id']
         del o['_id']
+        o['session'] = o['_serverid']
         del o['_serverid']
         yield o
 
