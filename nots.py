@@ -250,7 +250,7 @@ def format_time(ts):
     """
     t = time.localtime(long(ts) / 1000)
     dt = datetime.datetime(*t[:7])
-    return str(dt.date())
+    return str(dt.isoformat())
 
 def ts_to_ms(ts, is_ending_timestamp=False):
     """Convert a timestamp to ms.
@@ -466,6 +466,31 @@ def dump_turtle(args):
             }
         print out.encode('utf-8')
 
+def dump_elasticsearch(args):
+    opts = {}
+    args = dict( a.split('=') for a in args )
+    if args.get('subject'):
+        opts['subject'] = args.get('subject')
+    if args.get('from'):
+        opts['begin'] = { '$gt': long(args.get('from')) }
+    if args.get('to'):
+        opts['end'] = { '$lt': long(args.get('to')) }
+
+    cursor = db['trace'].find(opts)
+    obsels = iter_obsels(cursor)
+    for i, o in enumerate(obsels):
+        o['@timestamp'] = o['begin'] = format_time(o['begin'])
+        o['end'] = format_time(o['end'])
+        o['@id'] = unicode(o['@id'])
+        out = u"""{"index":{"_index":"%(base)s","_type":"obsel","_id":"%(index)d"}}
+{ %(data)s }""" % {
+    'base': CONFIG['database'],
+    'index': i + 1,
+    'data': u", ".join( u'%s: %s' % (name,
+                                     json.dumps(value))
+                        for (name, value) in o.iteritems())
+}
+        print out.encode('utf-8')
 
 def dump_db(args):
     """Dump all obsels from the database.
@@ -536,6 +561,10 @@ if __name__ == "__main__":
                       help="Dump database to stdout in JSON format. You can additionnaly specify one or many filters:\n  subject=foo: filter on subject\n  from=NNN: filter from the given timecode\n  to=NNN: filter to the given timecode",
                       default=False)
 
+    parser.add_option("-E", "--elasticsearch", dest="dump_elasticsearch", action="store_true",
+                      help="Dump database into ElasticSearch bulk import format",
+                      default=False)
+
     parser.add_option("-T", "--dump-as-turtle", dest="dump_turtle", action="store_true",
                       help="Dump database to stdout in TTL format. You can additionnaly specify one or many filters:\n  subject=foo: filter on subject\n  from=NNN: filter from the given timecode\n  to=NNN: filter to the given timecode",
                       default=False)
@@ -569,6 +598,8 @@ if __name__ == "__main__":
         dump_turtle(args)
     elif options.dump_db:
         dump_db(args)
+    elif options.dump_elasticsearch:
+        dump_elasticsearch(args)
     else:
         print "Options:"
         for k, v in CONFIG.iteritems():
