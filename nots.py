@@ -146,7 +146,7 @@ def trace():
             session['userinfo'] = {'id': str(uuid.uuid1())}
             db['userinfo'].save(dict(session['userinfo']))
         if request.method == 'POST':
-            obsels = request.json
+            obsels = request.json or []
         else:
             data = request.values.get('post') or request.values.get('data', "")
             if data.startswith('c['):
