@@ -130,8 +130,13 @@ def iter_obsels(cursor):
         del o['_serverid']
         yield o
 
-@app.route('/trace/', methods= [ 'POST', 'GET', 'HEAD' ])
+@app.route('/trace/', methods= [ 'POST', 'GET', 'HEAD', 'OPTIONS' ])
 def trace():
+    if request.method == 'OPTIONS':
+        return Response('', 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+        })
     if (request.method == 'POST' or
         (request.method == 'GET' and 'data' in request.values)):
         # Handle posting obsels to the trace
