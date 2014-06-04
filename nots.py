@@ -72,12 +72,20 @@ class MongoEncoder(json.JSONEncoder):
 def custom_401(error):
     return Response('Unauthorized access', 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
 
-@app.route("/")
+@app.route("/", methods= [ 'GET', 'HEAD', 'OPTIONS' ])
 def index():
+    if request.method == 'HEAD' or request.method == 'OPTIONS':
+        return Response('', 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+        })
     if 'userinfo' in session:
         #return 'Logged in as : %s' % escape(session['navigator'])
         #session['navigator']['id']="test";
-        return "Logged in as " + session['userinfo']['id']
+        return Response("Logged in as " + session['userinfo']['id'], 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+        })
     return 'You are not logged in'
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -482,10 +490,19 @@ def dump_elasticsearch(args):
         o['@timestamp'] = o['begin'] = format_time(o['begin'])
         o['end'] = format_time(o['end'])
         o['@id'] = unicode(o['@id'])
-        out = u"""{"index":{"_index":"%(base)s","_type":"obsel","_id":"%(index)d"}}
+        if 'traceInfo' in o:
+            for ex in re.split("\s*,\s*", o.get('traceInfo', "")):
+                if ex:
+                    l = ex.split(':')
+                    if len(l) == 2:
+                        o[l[0].strip()] = str(l[1].strip())
+            del o['traceInfo']
+        out = u"""{"index":{"_index":"%(base)s","_type":"%(type)s","_id":"%(index)d"}, "_timestamp": "%(timestamp)s"}
 { %(data)s }""" % {
     'base': CONFIG['database'],
+    'type': o['@type'],
     'index': i + 1,
+    'timestamp': o['@timestamp'],
     'data': u", ".join( u'%s: %s' % (name,
                                      json.dumps(value))
                         for (name, value) in o.iteritems())
