@@ -99,6 +99,7 @@
                     // FIXME: hack to filter out invalid obsels with invalid timestamp
                         .filter(function(o) { return o.begin > 100000 })
                         .map( function(o) {
+                            o.uri = o.id;
                         return {
                             "start": new Date(o.begin),
                             "group": o.type,
@@ -132,13 +133,14 @@
 
                 $("#info").click(function () { $('#obselinfo').toggle(); });
                 $('#trace-timeline').on('hover', '.obsel-data', function () {
-                    var begin = new Date(parseInt(this.dataset.begin));
-                    var end = new Date(parseInt(this.dataset.end));
+                    var o = tr.get_obsel(this.dataset.id);
+                    var begin = new Date(o.begin);
+                    var end = new Date(o.end);
                     $('#obselinfo').html('<a href="' + tr.uri + this.dataset.subject + '/' + this.dataset.id + '">' + this.dataset.id + '</a>'
                                          + '<p>From&nbsp;' + begin.toJSON() 
                                          + '<br>To&nbsp;&nbsp;&nbsp;&nbsp;' + end.toJSON() 
                                          + '<br>Duration: ' + (end - begin) / 1000 + ' s.</p>'
-                                         + '<p>'+ $(this).text().replace(',', '<br>') + '</p>');
+                                         + '<p>'+ $(this).text().replace(', ', '<br>') + '</p>');
                 });
 
                 $('#load').bind('click', function () {
