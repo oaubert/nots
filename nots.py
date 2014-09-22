@@ -508,7 +508,7 @@ def dump_elasticsearch(args):
     'type': o['@type'],
     'index': i + 1,
     'timestamp': o['@timestamp'],
-    'data': u", ".join( u'%s: %s' % (name,
+    'data': u", ".join( u'"%s": %s' % (name,
                                      json.dumps(value))
                         for (name, value) in o.iteritems())
 }
