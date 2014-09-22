@@ -448,9 +448,9 @@ def dump_turtle(args):
     if args.get('subject'):
         opts['subject'] = args.get('subject')
     if args.get('from'):
-        opts['begin'] = { '$gt': long(args.get('from')) }
+        opts['begin'] = { '$gt': ts_to_ms(args.get('from')) }
     if args.get('to'):
-        opts['end'] = { '$lt': long(args.get('to')) }
+        opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
     cursor = db['trace'].find(opts)
     obsels = iter_obsels(cursor)
@@ -485,9 +485,9 @@ def dump_elasticsearch(args):
     if args.get('subject'):
         opts['subject'] = args.get('subject')
     if args.get('from'):
-        opts['begin'] = { '$gt': long(args.get('from')) }
+        opts['begin'] = { '$gt': ts_to_ms(args.get('from')) }
     if args.get('to'):
-        opts['end'] = { '$lt': long(args.get('to')) }
+        opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
     cursor = db['trace'].find(opts)
     obsels = iter_obsels(cursor)
@@ -522,9 +522,9 @@ def dump_db(args):
     if args.get('subject'):
         opts['subject'] = args.get('subject')
     if args.get('from'):
-        opts['begin'] = { '$gt': long(args.get('from')) }
+        opts['begin'] = { '$gt': ts_to_ms(args.get('from')) }
     if args.get('to'):
-        opts['end'] = { '$lt': long(args.get('to')) }
+        opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
     cursor = db['trace'].find(opts)
     count = cursor.count()
@@ -569,7 +569,7 @@ def dump_db(args):
 app.secret_key = os.urandom(24)
 
 if __name__ == "__main__":
-    parser=OptionParser(usage="""Trace server.\n%prog [options]""")
+    parser=OptionParser(usage="""Trace server.\n%prog [options]\n\nThe from/to filters accept either plain integer timestamps (considered as ms) or YYYY-MM-DD syntax.""")
 
     parser.add_option("-b", "--base", dest="database", action="store",
                       help="Mongo database name.",
@@ -584,7 +584,7 @@ if __name__ == "__main__":
                       default=False)
 
     parser.add_option("-E", "--elasticsearch", dest="dump_elasticsearch", action="store_true",
-                      help="Dump database into ElasticSearch bulk import format",
+                      help="Dump database into ElasticSearch bulk import format (subject/from/to filters possible)",
                       default=False)
 
     parser.add_option("-T", "--dump-as-turtle", dest="dump_turtle", action="store_true",
