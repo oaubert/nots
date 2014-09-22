@@ -569,7 +569,7 @@ def dump_db(args):
 app.secret_key = os.urandom(24)
 
 if __name__ == "__main__":
-    parser=OptionParser(usage="""Trace server.\n%prog [options]\n\nThe from/to filters accept either plain integer timestamps (considered as ms) or YYYY-MM-DD syntax.""")
+    parser=OptionParser(usage="""Trace server.\n%prog [options]\n\nThe from/to filters accept either plain integer timestamps (considered as ms) or YYYY/MM/DD syntax.""")
 
     parser.add_option("-b", "--base", dest="database", action="store",
                       help="Mongo database name.",
