@@ -489,6 +489,11 @@ def dump_elasticsearch(args):
     if args.get('to'):
         opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
+    # Redecorate all values with media id or url info Mediaid is
+    # indexed by session key. We try to update it for every obsel
+    # where the info is present, or reconstruct it 
+    mediaid = {}
+
     cursor = db['trace'].find(opts)
     obsels = iter_obsels(cursor)
     for i, o in enumerate(obsels):
@@ -502,6 +507,14 @@ def dump_elasticsearch(args):
                     if len(l) == 2:
                         o[l[0].strip()] = str(l[1].strip())
             del o['traceInfo']
+        if 'url' in o:
+            m = re.search('/contents/\w+/(\w+)', o['url'])
+            if m:
+                mediaid[o['session']] = m.group(1)
+        if 'media-id' in o and o['media-id'] != 'm1':
+            mediaid[o['session']] = o['media-id']
+        else:
+            o['media-id'] = mediaid.get(o['session'], "unknown")
         out = u"""{"index":{"_index":"%(base)s","_type":"%(type)s","_id":"%(index)d"}, "_timestamp": "%(timestamp)s"}
 { %(data)s }""" % {
     'base': CONFIG['database'],
