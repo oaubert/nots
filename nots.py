@@ -442,7 +442,12 @@ def get_stats(args=None):
 def dump_stats(args):
     print json.dumps(get_stats(args), indent=2).encode('utf-8')
 
-def dump_turtle(args):
+def enriched_obsels(args):
+    """Enriched obsel iterator.
+
+    It takes arguments as parameters, and returns as an iterator obsels, which are decorated with additional information such as media-id
+    It returns a tuple (count, iterator)
+    """
     opts = {}
     args = dict( a.split('=') for a in args )
     if args.get('subject'):
@@ -452,8 +457,40 @@ def dump_turtle(args):
     if args.get('to'):
         opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
+    # Redecorate all values with media id or url info Mediaid is
+    # indexed by session key. We try to update it for every obsel
+    # where the info is present, or reconstruct it 
     cursor = db['trace'].find(opts)
+    count = cursor.count()
+    return (count, iter_enriched_obsels(cursor))
+
+def iter_enriched_obsels(cursor):
+    mediaid = {}
     obsels = iter_obsels(cursor)
+    for i, o in enumerate(obsels):
+        o['date'] = format_time(o['begin'])
+        if 'traceInfo' in o:
+            for ex in re.split("\s*,\s*", o.get('traceInfo', "")):
+                if ex:
+                    l = ex.split(':')
+                    if len(l) == 2:
+                        o[l[0].strip()] = str(l[1].strip())
+            del o['traceInfo']
+        if 'url' in o:
+            m = re.search('/contents/\w+/(\w+)', o['url'])
+            if m:
+                mid = m.group(1)
+                if re.search('^\d', mid):
+                    mid = "m" + mid
+                mediaid[o['session']] = mid
+        if 'media-id' in o and o['media-id'] != 'm1':
+            mediaid[o['session']] = o['media-id']
+        else:
+            o['media-id'] = mediaid.get(o['session'], "unknown")
+        yield o
+    
+def dump_turtle(args):
+    (count, obsels) = enriched_obsels(args)
     for o in obsels:
         out = u"""@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix ktbs: <http://liris.cnrs.fr/silex/2009/ktbs#> .
@@ -480,41 +517,11 @@ def dump_turtle(args):
         print out.encode('utf-8')
 
 def dump_elasticsearch(args):
-    opts = {}
-    args = dict( a.split('=') for a in args )
-    if args.get('subject'):
-        opts['subject'] = args.get('subject')
-    if args.get('from'):
-        opts['begin'] = { '$gt': ts_to_ms(args.get('from')) }
-    if args.get('to'):
-        opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
-
-    # Redecorate all values with media id or url info Mediaid is
-    # indexed by session key. We try to update it for every obsel
-    # where the info is present, or reconstruct it 
-    mediaid = {}
-
-    cursor = db['trace'].find(opts)
-    obsels = iter_obsels(cursor)
+    (count, obsels) = enriched_obsels(args)
     for i, o in enumerate(obsels):
-        o['@timestamp'] = o['begin'] = format_time(o['begin'])
+        o['@timestamp'] = o['begin'] = o['date']
         o['end'] = format_time(o['end'])
         o['@id'] = unicode(o['@id'])
-        if 'traceInfo' in o:
-            for ex in re.split("\s*,\s*", o.get('traceInfo', "")):
-                if ex:
-                    l = ex.split(':')
-                    if len(l) == 2:
-                        o[l[0].strip()] = str(l[1].strip())
-            del o['traceInfo']
-        if 'url' in o:
-            m = re.search('/contents/\w+/(\w+)', o['url'])
-            if m:
-                mediaid[o['session']] = m.group(1)
-        if 'media-id' in o and o['media-id'] != 'm1':
-            mediaid[o['session']] = o['media-id']
-        else:
-            o['media-id'] = mediaid.get(o['session'], "unknown")
         out = u"""{"index":{"_index":"%(base)s","_type":"%(type)s","_id":"%(index)d"}, "_timestamp": "%(timestamp)s"}
 { %(data)s }""" % {
     'base': CONFIG['database'],
@@ -530,18 +537,7 @@ def dump_elasticsearch(args):
 def dump_db(args):
     """Dump all obsels from the database.
     """
-    opts = {}
-    args = dict( a.split('=') for a in args )
-    if args.get('subject'):
-        opts['subject'] = args.get('subject')
-    if args.get('from'):
-        opts['begin'] = { '$gt': ts_to_ms(args.get('from')) }
-    if args.get('to'):
-        opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
-
-    cursor = db['trace'].find(opts)
-    count = cursor.count()
-    obsels = iter_obsels(cursor)
+    (count, obsels) = enriched_obsels(args)
     print """{
   "@context": [
      "http://liris.cnrs.fr/silex/2011/ktbs-jsonld-context"
