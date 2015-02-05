@@ -484,7 +484,7 @@ def iter_enriched_obsels(cursor):
                     mid = "m" + mid
                 mediaid[o['session']] = mid
         if 'media-id' in o and o['media-id'] != 'm1':
-            mediaid[o['session']] = o['media-id']
+            mediaid[o['session']] = o['media-id'] = re.sub('^v_', '', o['media-id'])
         else:
             o['media-id'] = mediaid.get(o['session'], "unknown")
         yield o
