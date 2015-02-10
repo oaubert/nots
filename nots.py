@@ -620,11 +620,11 @@ if __name__ == "__main__":
         options.allow_external_access = False
     CONFIG.update(vars(options))
 
+    db = connection[CONFIG['database']]
+
     if args and args[0] == 'shell':
         import pdb; pdb.set_trace()
         import sys; sys.exit(0)
-
-    db = connection[CONFIG['database']]
 
     if options.dump_stats:
         dump_stats(args)
