@@ -314,12 +314,12 @@ def trace_get(info):
     # TODO: Find a way to return a summarized representation if interval is too large.
     from_ts = ts_to_ms(request.values.get('from', None))
     to_ts = ts_to_ms(request.values.get('to', None), True)
-    page_number = request.values.get('page', None)
-    if page_number is not None:
-        page_number = int(page_number)
     page_size = request.values.get('pageSize', 100)
     if page_size is not None:
         page_size = int(page_size)
+    page_number = request.values.get('page', None)
+    if page_number is not None:
+        page_number = int(page_number)
     info = info.split('/')
     query = {}
     if from_ts is not None:
@@ -336,8 +336,11 @@ def trace_get(info):
 
         if page_number is not None:
             # User requested a specific page number.
-            i = page_number * page_size
-            if i > total:
+            if page_number > 0:
+                i = page_number * page_size
+            else:
+                i = total + page_number * page_size
+            if i > total or i < 0:
                 # Requested Range Not Satisfiable
                 abort(416)
             else:
