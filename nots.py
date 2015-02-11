@@ -460,14 +460,14 @@ def enriched_obsels(args):
     if args.get('to'):
         opts['end'] = { '$lt': ts_to_ms(args.get('to'), True) }
 
-    # Redecorate all values with media id or url info Mediaid is
-    # indexed by session key. We try to update it for every obsel
-    # where the info is present, or reconstruct it 
     cursor = db['trace'].find(opts)
     count = cursor.count()
     return (count, iter_enriched_obsels(cursor))
 
 def iter_enriched_obsels(cursor):
+    # Redecorate all values with media id or url info Mediaid is
+    # indexed by session key. We try to update it for every obsel
+    # where the info is present, or reconstruct it 
     mediaid = {}
     obsels = iter_obsels(cursor)
     for i, o in enumerate(obsels):
