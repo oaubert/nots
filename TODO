@@ -1,2 +1,6 @@
 * Write unit tests
 * Write better doc/README/tutorial
+* Implement response compression (using https://github.com/wichitacode/flask-compress)
+* Timeline: add download progress report
+* Implement chunked response
+* Implement exclude filters

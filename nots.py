@@ -365,7 +365,7 @@ def trace_get(info):
                                     ],
                                 "@id": ".",
                                 "hasObselList": "",
-                                'obsels': list(iter_obsels(cursor)) },
+                                'obsels': list(iter_enriched_obsels(cursor)) },
                                                                   indent=None if request.is_xhr else 2,
                                                                   cls=MongoEncoder),
                                                            mimetype='application/json')
@@ -392,7 +392,7 @@ def trace_get(info):
                             ],
                         "@id": ".",
                         "hasObselList": "",
-                        'obsels': list(iter_obsels(obsels)) },
+                        'obsels': list(iter_enriched_obsels(obsels)) },
                                                           indent=None if request.is_xhr else 2,
                                                           cls=MongoEncoder),
                                                    mimetype='application/json')
@@ -407,7 +407,7 @@ def trace_get(info):
                     ],
                     "@id": ".",
                     "hasObselList": "",
-                    "obsels": list(iter_obsels(db['trace'].find( { '_id': bson.ObjectId(info[1]) }))) },
+                    "obsels": list(iter_enriched_obsels(db['trace'].find( { '_id': bson.ObjectId(info[1]) }))) },
                                    indent=None if request.is_xhr else 2,
                                    cls=MongoEncoder),
                                            mimetype='application/json')
