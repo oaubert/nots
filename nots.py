@@ -52,6 +52,7 @@ CONFIG = {
     # 'localhost' -> localhost only
     # 'any' -> any host
     'trace_access_control': 'none',
+    'port': 5001,
 }
 
 MAX_DEFAULT_OBSEL_COUNT = 1000
@@ -587,6 +588,9 @@ if __name__ == "__main__":
                       help="Mongo database name.",
                       default="ktbs")
 
+    parser.add_option("-p", "--port", dest="port", type="int", action="store",
+                      help="Port number", default=5001)
+
     parser.add_option("-d", "--debug", dest="enable_debug", action="store_true",
                       help="Enable debug. This implicitly disallows external access.",
                       default=False)
@@ -642,6 +646,6 @@ if __name__ == "__main__":
         if CONFIG['enable_debug']:
             app.run(debug=True)
         elif CONFIG['allow_external_access']:
-            app.run(debug=False, host='0.0.0.0')
+            app.run(debug=False, host='0.0.0.0', port=CONFIG['port'])
         else:
-            app.run(debug=False)
+            app.run(debug=False, port=CONFIG['port'])
