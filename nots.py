@@ -56,7 +56,7 @@ CONFIG = {
 
 MAX_DEFAULT_OBSEL_COUNT = 1000
 
-connection = pymongo.Connection("localhost", 27017)
+connection = pymongo.MongoClient("localhost", 27017)
 db = None
 
 app = Flask(__name__)
