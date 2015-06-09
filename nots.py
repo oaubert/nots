@@ -644,7 +644,7 @@ if __name__ == "__main__":
             print " %s: %s" % (k, str(v))
 
         if CONFIG['enable_debug']:
-            app.run(debug=True)
+            app.run(debug=True, port=CONFIG['port'])
         elif CONFIG['allow_external_access']:
             app.run(debug=False, host='0.0.0.0', port=CONFIG['port'])
         else:
