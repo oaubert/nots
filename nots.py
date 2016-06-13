@@ -239,9 +239,9 @@ def user_stats(user):
             ] )
     ranges = []
 
-    t = time.localtime(aggr['result'][0]['max'] / 1000)
+    t = time.localtime(aggr[0]['max'] / 1000)
     tmax = datetime.datetime(*t[:7])
-    t = time.localtime(aggr['result'][0]['min'] / 1000)
+    t = time.localtime(aggr[0]['min'] / 1000)
     dt = datetime.datetime(*t[:7])
 
     while dt < tmax:
@@ -422,25 +422,25 @@ def logout():
 
 def get_stats(args=None):
     aggr = db['trace'].aggregate( [
-            { '$match': { 'begin': { '$ne': 0 } } },
-            { '$group':
-              { '_id': '$subject',
-                'min': { '$min': '$begin' },
-                'max': { '$max': '$end' },
-                'obselCount': { '$sum': 1 }
-                }
-              }
-            ] )
+        { '$match': { 'begin': { '$ne': 0 } } },
+        { '$group':
+          { '_id': '$subject',
+            'min': { '$min': '$begin' },
+            'max': { '$max': '$end' },
+            'obselCount': { '$sum': 1 }
+          }
+    }
+    ] )
     return OrderedDict( [
             ('obselCount', db['trace'].find().count()),
-            ('subjectCount', len(aggr['result'])),
-            ('minTimestamp', min(r['min'] for r in aggr['result'])),
-            ('maxTimestamp', min(r['max'] for r in aggr['result'])),
+            ('subjectCount', sum(1 for _ in aggr)),
+            ('minTimestamp', min(r['min'] for r in aggr)),
+            ('maxTimestamp', min(r['max'] for r in aggr)),
             ('subjects', [ { 'id': s['_id'],
                              'obselCount': s['obselCount'],
                              'minTimestamp': s['min'],
-                             'maxTimestamp': s['max'] }
-                           for s in aggr['result'] ])
+                              'maxTimestamp': s['max'] }
+                           for s in aggr ])
             ])
 
 def dump_stats(args):
