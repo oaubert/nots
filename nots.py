@@ -226,7 +226,7 @@ def users_stats(user=None):
 def user_stats(user):
     """Return detailed stats (by day) for the given user.
     """
-    aggr = db['trace'].aggregate( [
+    aggr = list(db['trace'].aggregate( [
             { '$match': { 'begin': { '$ne': 0 },
                           'subject': user } },
             { '$group':
@@ -236,7 +236,7 @@ def user_stats(user):
                 'obselCount': { '$sum': 1 }
                 }
               }
-            ] )
+            ] ))
     ranges = []
 
     t = time.localtime(aggr[0]['max'] / 1000)
@@ -421,7 +421,7 @@ def logout():
     return redirect(url_for('index'))
 
 def get_stats(args=None):
-    aggr = db['trace'].aggregate( [
+    aggr = list(db['trace'].aggregate( [
         { '$match': { 'begin': { '$ne': 0 } } },
         { '$group':
           { '_id': '$subject',
@@ -429,8 +429,8 @@ def get_stats(args=None):
             'max': { '$max': '$end' },
             'obselCount': { '$sum': 1 }
           }
-    }
-    ] )
+        }
+    ] ))
     return OrderedDict( [
             ('obselCount', db['trace'].find().count()),
             ('subjectCount', sum(1 for _ in aggr)),
