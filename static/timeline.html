@@ -65,11 +65,20 @@
                     $("#label").text(s);
                 };
 
+                var getAbsoluteUrl = (function() {
+                    var a;
+                    return function(url) {
+                        if (!a) { a = document.createElement('a'); }
+                        a.href = url;
+                        return a.href;
+                    };
+                })();
+
                 var timelineData;
                 var page = 2;
 
                 tr = tracemanager.init_trace("test", {
-                    url: "http://localhost:5000/trace/",
+                    url: getAbsoluteUrl('/trace/'),
                     requestmode: 'GET',
                     syncmode: "none",
                     default_subject: "ktbs4js",
